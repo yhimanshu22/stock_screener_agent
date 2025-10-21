@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+langchain
+langgraph
+langchain_community
+yfinance
+ollama
+python-dotenv
+
