@@ -1,7 +1,3 @@
-Here’s a **corrected and complete `README.md`** version for your project — covering both **backend (FastAPI)** and **frontend (React + Vite)** setup and run instructions 👇
-
----
-
 # 🧠 Stock Screener AI Agent
 
 An **AI-powered stock analysis and screening tool** built using **FastAPI**, **LangGraph**, and **React (Vite)**.
@@ -149,9 +145,4 @@ stock_screener_agent/
    * Dividend yield
    * Real-time news
 
----
-
-## 🖼️ Preview
-
-<img width="1840" height="835" alt="UI Preview" src="https://github.com/user-attachments/assets/e20076aa-3a08-40cc-897d-e87c6c1692fa" />
 ---
