@@ -47,13 +47,15 @@ Make sure you have installed:
 
    ```bash
    pip install -r requirements.txt
+   python -c "import langchain_ollama, langchain_community, langchain_core; print('ok')"
    ```
 
    or if using [uv](https://github.com/astral-sh/uv):
 
    ```bash
    pip install uv
-   uv pip install -r requirements.txt
+   pip install -r requirements.txt
+   python -c "import langchain_ollama, langchain_community, langchain_core; print('ok')"
    ```
 
 4. **Run the backend**
