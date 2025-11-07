@@ -1,124 +1,170 @@
-import { useState, useEffect } from 'react';
-import ResultsCard from './components/ResultsCard';
-import HistoryList from './components/HistoryList';
-import { queryAgent } from './api/agentApi';
+import { useState, useEffect } from "react";
+import ResultsCard from "./components/ResultsCard";
+import HistoryList from "./components/HistoryList";
+import { queryAgent } from "./api/agentApi";
+import FeedbackSteps from "./components/FeedbackSteps";
 
-// Main App Component (improved)
 const App = () => {
-  const [query, setQuery] = useState('Give me a summary of AAPL and its recent news.');
-  const [analysis, setAnalysis] = useState('');
+  const [query, setQuery] = useState("");
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [history, setHistory] = useState([]);
+  const [feedback, setFeedback] = useState([]);
+  const [activeStep, setActiveStep] = useState(0); // ✅ NEW
 
-  // load history from localStorage
+  // Load search history
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('screener_history_v1');
-      if (raw) setHistory(JSON.parse(raw));
-    } catch {}
+    const raw = localStorage.getItem("screener_history_v1");
+    if (raw) setHistory(JSON.parse(raw));
   }, []);
 
   const pushHistory = (entry) => {
     const next = [entry, ...history].slice(0, 30);
     setHistory(next);
-    try { localStorage.setItem('screener_history_v1', JSON.stringify(next)); } catch {}
+    localStorage.setItem("screener_history_v1", JSON.stringify(next));
   };
 
   const handleSubmit = async (e) => {
-    e?.preventDefault();
+    e.preventDefault();
     if (!query.trim()) {
-      setError('Please enter a query.');
+      setError("Please enter a company name or query.");
       return;
     }
 
     setLoading(true);
-    setError('');
-    setAnalysis('');
+    setError("");
+    setData(null);
+    setFeedback([]);
+    setActiveStep(0); 
 
     try {
       const res = await queryAgent(query);
-      if (!res.ok) throw new Error(res.error || 'agent error');
+      if (!res.ok) throw new Error(res.error || "Agent error");
 
-      // Ensure analysis is a string before passing to React components
-      let content = res.content ?? res.raw ?? '';
-      if (typeof content === 'object') {
-        try {
-          content = JSON.stringify(content, null, 2);
-        } catch {
-          content = String(content);
-        }
-      }
+      const apiData = res.data?.data || res.data || res.content || null;
+      const steps = apiData?.feedback_steps || [];
 
-      setAnalysis(content);
-      pushHistory({ id: Date.now(), query, result: content, ts: new Date().toISOString() });
+      setFeedback(steps);
+      setActiveStep(0);
+
+    
+      steps.forEach((_, idx) => {
+        setTimeout(() => {
+          setActiveStep(idx + 1);
+        }, (idx + 1) * 800);
+      });
+
+      setData(apiData);
+      pushHistory({
+        id: Date.now(),
+        query,
+        result: apiData,
+        ts: new Date().toISOString(),
+      });
     } catch (err) {
-      setError(err.message || 'Failed to get analysis.');
+      setError(err.message || "Failed to get analysis.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRecall = (item) => {
-    setQuery(item.query);
-    setAnalysis(item.result);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-4 sm:p-8">
-      <div className="max-w-5xl mx-auto">
-        <header className="mb-8 text-center">
-          <h1 className="text-4xl font-extrabold text-cyan-400">Stock Screener AI Agent</h1>
-          <p className="text-gray-400 mt-2">LangGraph + FastAPI + React</p>
-        </header>
+    <div className="min-h-screen bg-[#F9FAFC] flex flex-col items-center justify-center text-gray-800 p-6">
+      {/* Header */}
+      <header className="absolute top-6 left-8 flex gap-8 text-gray-700 text-sm font-medium">
+        <a href="#" className="hover:text-blue-600">Home</a>
+        <a href="#" className="hover:text-blue-600">Screens</a>
+        <a href="#" className="hover:text-blue-600">Tools ▾</a>
+      </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <section className="lg:col-span-2 space-y-4">
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="e.g., Compare market cap of TSLA and GOOGL"
-                className="flex-grow bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                disabled={loading}
-              />
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 text-white font-semibold px-5 py-3 rounded-lg shadow"
-              >
-                {loading ? 'Analyzing…' : 'Get Analysis'}
-              </button>
-            </form>
+      <div className="max-w-3xl w-full text-center mt-12">
+        {/* Logo + tagline */}
+        <h1 className="text-6xl font-extrabold text-gray-900 mb-2">
+          screener<span className="text-green-500">AI</span>
+        </h1>
+        <p className="text-gray-500 mb-6">
+          Stock analysis and screening tool powered by AI.
+        </p>
 
-            {error && (
-              <div className="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded-lg">
-                <strong className="font-bold">Error:</strong> <span>{error}</span>
-              </div>
+        {/* Search Form */}
+        <form onSubmit={handleSubmit} className="flex items-center justify-center gap-3">
+          <div className="relative w-full max-w-xl">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="🔍 Search for a company or ask an AI question..."
+              className="w-full border border-gray-300 rounded-lg px-5 py-3 shadow-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+              disabled={loading}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-green-500 hover:bg-green-600 text-white font-semibold px-5 py-3 rounded-lg transition"
+          >
+            {loading ? "Analyzing…" : "Search"}
+          </button>
+        </form>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mt-4 bg-red-100 text-red-600 border border-red-300 px-4 py-2 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Feedback Steps */}
+        {feedback.length > 0 && (
+          <div className="mt-6">
+            <FeedbackSteps steps={feedback} activeStep={activeStep} />
+            {!loading && activeStep >= feedback.length && (
+              <p className="text-green-600 text-sm mt-2 font-medium">
+                ✅ All steps completed successfully!
+              </p>
             )}
+          </div>
+        )}
 
-            <ResultsCard analysis={analysis} loading={loading} />
-          </section>
-
-          <aside className="space-y-4">
-            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-              <h3 className="text-lg font-semibold text-cyan-300 mb-2">History</h3>
-              <HistoryList items={history} onRecall={handleRecall} onClear={() => { setHistory([]); localStorage.removeItem('screener_history_v1'); }} />
-            </div>
-
-            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 text-sm text-gray-300">
-              <h4 className="font-semibold text-cyan-300 mb-1">Tips</h4>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Be explicit: "Top dividend stocks with market cap & dividend yield".</li>
-                <li>For structured output ask "Return JSON with fields: ticker, score, reason".</li>
-              </ul>
-            </div>
-          </aside>
+        {/* Results Section */}
+        <div className="mt-10">
+          <ResultsCard data={data} analysis={null} loading={loading} />
         </div>
 
-        <footer className="text-center mt-8 text-gray-500 text-sm">
-          <p>SelfProject | Aug 2025 - Present</p>
+
+        {/* Quick Examples */}
+        <div className="mt-10 text-sm text-gray-500">
+          <p className="mb-3">Or try analysing:</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {["AAPL", "TSLA", "MSFT", "GOOGL", "NVDA"].map((ticker) => (
+              <button
+                key={ticker}
+                onClick={() =>
+                  setQuery(`Give me a summary of ${ticker} and its recent news.`)
+                }
+                className="px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-100"
+              >
+                {ticker}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* History */}
+        {history.length > 0 && (
+          <div className="mt-12 bg-white rounded-xl shadow-md p-4 max-w-xl mx-auto">
+            <h3 className="text-lg font-semibold mb-3 text-gray-700">Recent Searches</h3>
+            <HistoryList
+              items={history}
+              onRecall={(item) => setQuery(item.query)}
+            />
+          </div>
+        )}
+
+        {/* Footer */}
+        <footer className="mt-12 text-gray-400 text-xs">
+          <p>AI Stock Screener • Built with LangGraph + FastAPI + React</p>
         </footer>
       </div>
     </div>
@@ -126,4 +172,3 @@ const App = () => {
 };
 
 export default App;
-
