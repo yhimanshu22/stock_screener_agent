@@ -146,3 +146,8 @@ stock_screener_agent/
    * Real-time news
 
 ---
+<img width="1868" height="812" alt="image" src="https://github.com/user-attachments/assets/36092110-ec0e-4f20-876b-e7625a7036dd" />
+<img width="1423" height="681" alt="image" src="https://github.com/user-attachments/assets/4b768b5d-4782-4075-83f6-ac1b0be61a78" />
+<img width="1358" height="770" alt="image" src="https://github.com/user-attachments/assets/69691db0-f34a-4310-97c3-3c434757b513" />
+
+
