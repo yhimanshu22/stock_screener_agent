@@ -1,9 +1,21 @@
-fastapi
-uvicorn
-langchain
-langgraph
-langchain_community
-yfinance
-ollama
-python-dotenv
+# --- web/api ---
+fastapi>=0.110
+uvicorn[standard]>=0.30
 
+# --- langchain stack (use hyphen names for pip; underscore in imports) ---
+# Keep them in the same minor series to avoid mismatch issues.
+langchain>=0.2,<0.3
+langchain-core>=0.2,<0.3
+langchain-community>=0.2,<0.3
+langchain-ollama>=0.2,<0.3   # provides the `langchain_ollama` import
+
+# --- agent graph ---
+langgraph>=0.2,<0.3
+
+# --- data & utils ---
+yfinance>=0.2
+pandas>=2.2
+numpy>=1.26
+httpx>=0.27
+python-dotenv>=1.0
+ollama>=0.3                  # python client for local Ollama (optional)
